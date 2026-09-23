@@ -13,18 +13,45 @@ const srv = Bun.serve({
       },
 
       POST: async (req) => {
-        const body = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch (e: any) {
+          return Response.json({
+            message: "O JSON tá num formato errado",
+            parseError: e
+          }, { status: 400 })
+        }
+        if (!body.username)
+          return Response.json({ message: "Falta username" }, { status: 400 })
+        if (!body.email)
+          return Response.json({ message: "Falta email" }, { status: 400 })
+        if (!body.password)
+          return Response.json({ message: "Falta password" }, { status: 400 })
         const query = db.query(`
           INSERT INTO users(username, email, password_hash) 
           VALUES(:username, :email, :password_hash)
         `)
-        const dbResp = query.run({
-          ':username': body.username,
-          ':email': body.email,
-          ':password_hash': body.password
-        })
-        return Response.json({ message: "deu bom", dbResp });
-      }
+        try {
+          const dbResp = query.run({
+            ':username': body.username,
+            ':email': body.email,
+            ':password_hash': body.password
+          })
+          return Response.json({ message: "deu bom", dbResp });
+        } catch (e: any) {
+          if (e.code == "SQLITE_CONSTRAINT_UNIQUE") {
+            return Response.json({
+              message: "Username e Email precisam ser únicos",
+              code: "UNIQUE:CONSTRAINT"
+            }, { status: 400 })
+          }
+          return Response.json({
+            message: "Erro ao inserir no banco de dados",
+            dbError: e
+          }, { status: 500 })
+        }
+      },
     },
 
     "/user/:id": {
@@ -36,7 +63,25 @@ const srv = Bun.serve({
       },
 
       PUT: async (req) => {
-        const body = await req.json()
+        let body;
+        try {
+          body = await req.json()
+        } catch (e: any) {
+          return Response.json({
+            message: "O JSON tá num formato errado",
+            parseError: e
+          }, { status: 400 })
+        }
+        const querySelect = db.query(`SELECT * FROM users WHERE id = :_id_`)
+        const dbRespSelect = querySelect.get({ ":_id_": req.params.id })
+        if (dbRespSelect == null)
+          return Response.json({ message: "ID inexistente" }, { status: 400 })
+        if (!body.username)
+          return Response.json({ message: "Falta username" }, { status: 400 })
+        if (!body.email)
+          return Response.json({ message: "Falta email" }, { status: 400 })
+        if (!body.password)
+          return Response.json({ message: "Falta password" }, { status: 400 })
         const query = db.query(`
           UPDATE users 
           SET username = :username, email = :email, password_hash = :password_hash 
