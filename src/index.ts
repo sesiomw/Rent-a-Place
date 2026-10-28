@@ -1,19 +1,59 @@
+import login from "./index.html"
+import home from "./home.html"
 import { db } from "./db"
+
+const loggedUsers: any = {}
 
 const srv = Bun.serve({
   port: 3000,
   routes: {
 
+    "/": login,
+
+    "/home": home,
+
+    "/login": {
+      POST: async (req) => {
+        const body = await req.body?.json()
+        const query = db.query(`
+                    SELECT * FROM user
+                    WHERE username=:username
+                    LIMIT 1
+                `)
+        const data: any = query.get({
+          ":username": body.username
+        })
+        if (!data) {
+          return Response.json({ msg: "usuário não encontrado" }, { status: 404 })
+        }
+        const isMatch = await Bun.password.verify(body.password, data.password_hash)
+        if (!isMatch) {
+          return Response.json({ msg: "senha não confere" }, { status: 401 })
+        }
+        const uuid = crypto.randomUUID();
+        loggedUsers[uuid] = data
+        req.cookies.set("ses", uuid)
+        return Response.json(isMatch)
+      }
+    },
+
+    "/login/user": (req) => {
+      const ses = req.cookies.get("ses")
+      if (!ses || !loggedUsers[ses])
+        return Response.json({ msg: "não permitido" }, { status: 401 })
+      return Response.json(loggedUsers[ses])
+    },
+
     "/user": {
 
       GET: (req) => {
-        const query = db.query(`SELECT * FROM users`)
+        const query = db.query(`SELECT * FROM user`)
         const dbResp = query.all({})
         return Response.json({ message: "deu bom", dbResp })
       },
 
       POST: async (req) => {
-        let body;
+        let body: any;
         try {
           body = await req.json();
         } catch (e: any) {
@@ -29,14 +69,15 @@ const srv = Bun.serve({
         if (!body.password)
           return Response.json({ message: "Falta password" }, { status: 400 })
         const query = db.query(`
-          INSERT INTO users(username, email, password_hash) 
+          INSERT INTO user(username, email, password_hash) 
           VALUES(:username, :email, :password_hash)
         `)
         try {
+          const hash = await Bun.password.hash(body.password)
           const dbResp = query.run({
             ':username': body.username,
             ':email': body.email,
-            ':password_hash': body.password
+            ':password_hash': hash
           })
           return Response.json({ message: "deu bom", dbResp });
         } catch (e: any) {
@@ -57,13 +98,13 @@ const srv = Bun.serve({
     "/user/:id": {
 
       GET: (req) => {
-        const query = db.query(`SELECT * FROM users WHERE id = :_id_`)
+        const query = db.query(`SELECT * FROM user WHERE id = :_id_`)
         const dbResp = query.get({ ":_id_": req.params.id })
         return Response.json(dbResp)
       },
 
       PUT: async (req) => {
-        let body;
+        let body: any;
         try {
           body = await req.json()
         } catch (e: any) {
@@ -72,7 +113,7 @@ const srv = Bun.serve({
             parseError: e
           }, { status: 400 })
         }
-        const querySelect = db.query(`SELECT * FROM users WHERE id = :_id_`)
+        const querySelect = db.query(`SELECT * FROM user WHERE id = :_id_`)
         const dbRespSelect = querySelect.get({ ":_id_": req.params.id })
         if (dbRespSelect == null)
           return Response.json({ message: "ID inexistente" }, { status: 400 })
@@ -83,7 +124,7 @@ const srv = Bun.serve({
         if (!body.password)
           return Response.json({ message: "Falta password" }, { status: 400 })
         const query = db.query(`
-          UPDATE users 
+          UPDATE user
           SET username = :username, email = :email, password_hash = :password_hash 
           WHERE id = :_id_
         `)
@@ -97,7 +138,7 @@ const srv = Bun.serve({
       },
 
       DELETE: (req) => {
-        const query = db.query(`DELETE FROM users WHERE id = :_id_`)
+        const query = db.query(`DELETE FROM user WHERE id = :_id_`)
         const dbResp = query.run({ ":_id_": req.params.id })
         return Response.json({ message: "Usuário deletado", dbResp })
       }
@@ -106,15 +147,15 @@ const srv = Bun.serve({
     "/imovel": {
 
       GET: (req) => {
-        const query = db.query(`SELECT * FROM imoveis;`)
+        const query = db.query(`SELECT * FROM imovel;`)
         const dbResp = query.all({})
         return Response.json(dbResp)
       },
 
       POST: async (req) => {
-        const body = await req.json();
+        const body: any = await req.json();
         const query = db.query(`
-          INSERT INTO imoveis(descricao, endereco, valor) 
+          INSERT INTO imovel(descricao, endereco, valor) 
           VALUES(:descricao, :endereco, :valor)
         `)
         const dbResp = query.run({
@@ -129,15 +170,15 @@ const srv = Bun.serve({
     "/imovel/:id": {
 
       GET: (req) => {
-        const query = db.query(`SELECT * FROM imoveis WHERE id = :_id_`)
+        const query = db.query(`SELECT * FROM imovel WHERE id = :_id_`)
         const dbResp = query.get({ ":_id_": req.params.id })
         return Response.json(dbResp)
       },
 
       PUT: async (req) => {
-        const body = await req.json()
+        const body: any = await req.json()
         const query = db.query(`
-          UPDATE imoveis 
+          UPDATE imovel
           SET descricao = :descricao, endereco = :endereco, valor = :valor 
           WHERE id = :_id_
         `)
@@ -151,7 +192,7 @@ const srv = Bun.serve({
       },
 
       DELETE: (req) => {
-        const query = db.query(`DELETE FROM imoveis WHERE id = :_id_`)
+        const query = db.query(`DELETE FROM imovel WHERE id = :_id_`)
         const dbResp = query.run({ ":_id_": req.params.id })
         return Response.json({ message: "Imóvel deletado", dbResp })
       }

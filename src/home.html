@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <h1>HOME</h1>
+        <script>
+        async function init() {
+            const response = await fetch("/login/user")
+            if (!response.ok) {
+                alert("Usuário não logado")
+                window.location.href = "/"
+                return
+            }
+        }
+        init()
+    </script>
+</body>
+</html>

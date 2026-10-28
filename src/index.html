@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+    <form id="login">
+        <input type="text" name="username" placeholder="nome de usuário">
+        <input type="text" name="password" placeholder="senha">
+        <button>entrar</button>
+    </form>
+
+    <form id="cadastro">
+        <input type="text" name="username" placeholder="nome de usuário">
+        <input type="text" name="email" placeholder="email">
+        <input type="text" name="password" placeholder="senha">
+        <button>cadastrar-se</button>
+    </form>
+
+    <script>
+        const frmLogin = document.querySelector('#login')
+        const frmCadastro = document.querySelector('#cadastro')
+
+        frmLogin.addEventListener("submit", async (ev) => {
+            ev.preventDefault()
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-type": "application/json" },
+                body: JSON.stringify({
+                    "username": frmLogin.username.value,
+                    "password": frmLogin.password.value
+                })
+            })
+            if (response.status == 400) {
+                return alert("Vazio")
+            }
+            if (response.status == 404) {
+                alert("Usuário não existente")
+                return
+            }
+            if (response.status == 401) {
+                alert("Senha Incorreta")
+                return
+            }
+            if (response.ok) {
+                window.location.href = "/home"
+                return
+            }
+            alert("Deu b.o")
+        })
+
+        frmCadastro.addEventListener("submit", async (ev) => {
+            ev.preventDefault()
+            const response = await fetch("/user", {
+                method: "POST",
+                headers: { "Content-type": "application/json" },
+                body: JSON.stringify({
+                    "username": frmCadastro.username.value,
+                    "email": frmCadastro.email.value,
+                    "password": frmCadastro.password.value
+                })
+            })
+            const responseLogin = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-type": "application/json" },
+                body: JSON.stringify({
+                    "username": frmCadastro.username.value,
+                    "password": frmCadastro.password.value
+                })
+            })
+            if (response.ok) {
+                window.location.href = "/home"
+                return
+            }
+            alert("Deu b.o")
+        })
+    </script>
+</body>
+</html>
