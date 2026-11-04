@@ -75,9 +75,9 @@ const srv = Bun.serve({
         try {
           const hash = await Bun.password.hash(body.password)
           const dbResp = query.run({
-            ':username': body.username,
-            ':email': body.email,
-            ':password_hash': hash
+            ":username": body.username,
+            ":email": body.email,
+            ":password_hash": hash
           })
           return Response.json({ message: "deu bom", dbResp });
         } catch (e: any) {
@@ -129,7 +129,6 @@ const srv = Bun.serve({
           WHERE id = :_id_
         `)
         const dbResp = query.run({
-          ":_id_": req.params.id,
           ":username": body.username,
           ":email": body.email,
           ":password_hash": body.password
@@ -155,13 +154,25 @@ const srv = Bun.serve({
       POST: async (req) => {
         const body: any = await req.json();
         const query = db.query(`
-          INSERT INTO imovel(descricao, endereco, valor) 
+          INSERT INTO imovel(rua, numero, complemento, bairro, cep, cidade, uf, descricao, valor_aluguel, valor_cond, valor_iptu, metragem, qnt_quartos, qnt_banheiros, qnt_garagem) 
           VALUES(:descricao, :endereco, :valor)
         `)
         const dbResp = query.run({
-          ':descricao': body.descricao,
-          ':endereco': body.endereco,
-          ':valor': body.valor
+          ":rua": body.rua,
+          ":numero": body.numero,
+          ":complemento": body.complemento,
+          ":bairro": body.bairro,
+          ":cep": body.cep,
+          ":cidade": body.cidade,
+          ":uf": body.uf,
+          ":descricao": body.descricao,
+          ":valor_aluguel": body.valor_aluguel,
+          ":valor_cond": body.valor_cond,
+          ":valor_iptu": body.valor_iptu,
+          ":metragem": body.metragem,
+          ":qnt_quartos": body.qnt_quartos,
+          ":qnt_banheiros": body.qnt_banheiros,
+          ":qnt_garagem": body.qnt_garagem
         })
         return Response.json({ message: "deu bom", dbResp });
       }
@@ -179,14 +190,25 @@ const srv = Bun.serve({
         const body: any = await req.json()
         const query = db.query(`
           UPDATE imovel
-          SET descricao = :descricao, endereco = :endereco, valor = :valor 
+          SET rua = :rua, numero = :numero, complemento = :complemento, bairro = :bairro, cep = :cep, cidade = :cidade, uf = :uf, descricao = :descricao, valor_aluguel = :valor_aluguel, valor_cond = :valor_cond, valor_iptu = :valor_iptu, metragem = :metragem, qnt_quartos = :qnt_quartos, qnt_banheiros = :qnt_banheiros, qnt_garagem = :garagem 
           WHERE id = :_id_
         `)
         const dbResp = query.run({
-          ":_id_": req.params.id,
+          ":rua": body.rua,
+          ":numero": body.numero,
+          ":complemento": body.complemento,
+          ":bairro": body.bairro,
+          ":cep": body.cep,
+          ":cidade": body.cidade,
+          ":uf": body.uf,
           ":descricao": body.descricao,
-          ":endereco": body.endereco,
-          ":valor": body.valor
+          ":valor_aluguel": body.valor_aluguel,
+          ":valor_cond": body.valor_cond,
+          ":valor_iptu": body.valor_iptu,
+          ":metragem": body.metragem,
+          ":qnt_quartos": body.qnt_quartos,
+          ":qnt_banheiros": body.qnt_banheiros,
+          ":qnt_garagem": body.qnt_garagem
         })
         return Response.json({ message: "Imóvel atualizado com sucesso", dbResp })
       },
