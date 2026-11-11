@@ -152,10 +152,20 @@ const srv = Bun.serve({
       },
 
       POST: async (req) => {
+        const ses = req.cookies.get("ses");
+
+        if (!ses || !loggedUsers[ses]) {
+          return Response.json(
+            { message: "Usuário não autenticado" },
+            { status: 401 }
+          );
+        }
+
+        const usuario = loggedUsers[ses];
         const body: any = await req.json();
         const query = db.query(`
           INSERT INTO imovel(rua, numero, complemento, bairro, cep, cidade, uf, descricao, valor_aluguel, valor_cond, valor_iptu, metragem, qnt_quartos, qnt_banheiros, qnt_garagem) 
-          VALUES(:descricao, :endereco, :valor)
+          VALUES(:rua, :numero, :complemento, :bairro, :cep, :cidade, :uf, :descricao, :valor_aluguel, :valor_cond, :valor_iptu, :metragem, :qnt_quartos, :qnt_banheiros, :qnt_garagem)
         `)
         const dbResp = query.run({
           ":rua": body.rua,

@@ -141,6 +141,7 @@
         const btnCadastro = document.querySelector('#btnCadastro');
         const linkLogin = document.querySelector('#linkLogin');
         const linkCadastro = document.querySelector('#linkCadastro');
+
         function mostrarFormulario(tipo) {
             const loginAtivo = tipo === 'login';
             frmLogin.hidden = !loginAtivo;
@@ -156,18 +157,23 @@
                 String(!loginAtivo)
             );
         }
+
         btnLogin.addEventListener('click', () => {
             mostrarFormulario('login');
         });
+
         btnCadastro.addEventListener('click', () => {
             mostrarFormulario('cadastro');
         });
+
         linkLogin.addEventListener('click', () => {
             mostrarFormulario('login');
         });
+
         linkCadastro.addEventListener('click', () => {
             mostrarFormulario('cadastro');
         });
+
         frmLogin.addEventListener('submit', async (ev) => {
             ev.preventDefault();
             const botao = frmLogin.querySelector(
@@ -209,6 +215,7 @@
                 botao.disabled = false;
             }
         });
+        
         frmCadastro.addEventListener('submit', async (ev) => {
             ev.preventDefault();
             const botao = frmCadastro.querySelector(
