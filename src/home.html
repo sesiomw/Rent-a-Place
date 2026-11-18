@@ -19,6 +19,7 @@
     <main>
         <section id="area-imoveis">
             <h2>Imóveis disponíveis</h2>
+            <div id="lista-imoveis"></div>
         </section>
 
         <section id="area-cadastro" hidden>
@@ -97,6 +98,30 @@
         const areaImoveis = document.getElementById("area-imoveis");
         const areaCadastro = document.getElementById("area-cadastro");
         const formImovel = document.getElementById("form-imovel");
+        const listaImoveis = document.getElementById("lista-imoveis");
+
+        async function carregarImoveis() {
+            const resposta = await fetch("/imovel");
+            const imoveis = await resposta.json();
+            exibirImoveis(imoveis);
+        }
+
+        function exibirImoveis(imoveis) {
+            listaImoveis.innerHTML = "";
+            imoveis.forEach((imovel) => {
+                const cartao = document.createElement("div");
+                cartao.innerHTML = `
+            <h3>${imovel.rua}, ${imovel.numero}</h3>
+            <p>${imovel.bairro} - ${imovel.cidade}/${imovel.uf}</p>
+            <p>${imovel.descricao}</p>
+            <p>Aluguel: R$ ${imovel.valor_aluguel}</p>
+            <p>Quartos: ${imovel.qnt_quartos}</p>
+            <p>Banheiros: ${imovel.qnt_banheiros}</p>
+            <p>Metragem: ${imovel.metragem} m²</p>
+        `;
+                listaImoveis.appendChild(cartao);
+            });
+        }
 
         btnAnunciar.addEventListener("click", () => {
             areaImoveis.hidden = true;
@@ -133,6 +158,9 @@
             if (resposta.ok) {
                 alert("Imóvel cadastrado com sucesso!");
                 formImovel.reset();
+                areaCadastro.hidden = true;
+                areaImoveis.hidden = false;
+                carregarImoveis();
             } else {
                 alert("Não foi possível cadastrar o imóvel.");
             }
@@ -147,6 +175,7 @@
             }
         }
         init()
+        carregarImoveis();
     </script>
 </body>
 

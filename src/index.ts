@@ -164,10 +164,11 @@ const srv = Bun.serve({
         const usuario = loggedUsers[ses];
         const body: any = await req.json();
         const query = db.query(`
-          INSERT INTO imovel(rua, numero, complemento, bairro, cep, cidade, uf, descricao, valor_aluguel, valor_cond, valor_iptu, metragem, qnt_quartos, qnt_banheiros, qnt_garagem) 
-          VALUES(:rua, :numero, :complemento, :bairro, :cep, :cidade, :uf, :descricao, :valor_aluguel, :valor_cond, :valor_iptu, :metragem, :qnt_quartos, :qnt_banheiros, :qnt_garagem)
+          INSERT INTO imovel(id_user, rua, numero, complemento, bairro, cep, cidade, uf, descricao, valor_aluguel, valor_cond, valor_iptu, metragem, qnt_quartos, qnt_banheiros, qnt_garagem) 
+          VALUES(:id_user, :rua, :numero, :complemento, :bairro, :cep, :cidade, :uf, :descricao, :valor_aluguel, :valor_cond, :valor_iptu, :metragem, :qnt_quartos, :qnt_banheiros, :qnt_garagem)
         `)
         const dbResp = query.run({
+          ":id_user": usuario.id,
           ":rua": body.rua,
           ":numero": body.numero,
           ":complemento": body.complemento,
